@@ -20,7 +20,7 @@ export default function ArticlePreview(props) {
     <div className="article-preview">
       <div className="article-meta">
         <Link to={`/profile/${props.author}`}>
-          <img src={authContext?.userInfos?.image} />
+          <img src={props.image} />
         </Link>
         <div className="info">
           <Link to={`/profile/${props.author}`} className="author">
