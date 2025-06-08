@@ -1,11 +1,6 @@
-import React, { useState } from "react";
-import { Link, useActionData } from "react-router-dom";
-import { useContext } from "react";
-import AuthContext from "../../Context/Context";
+import { Link } from "react-router-dom";
 
 export default function ArticlePreview(props) {
-  const authContext = useContext(AuthContext);
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = {
@@ -34,8 +29,8 @@ export default function ArticlePreview(props) {
               ? props.unFavoriteFunc(props.slug)
               : props.favoriteFunc(props.slug);
           }}
-          className={`btn btn-outline-primary  btn-sm pull-xs-right ${
-            props?.favorited ? "active" : ""
+          className={`btn btn-outline-primary btn-sm pull-xs-right ${
+            props.favorited ? "active" : ""
           }`}
         >
           <i className="ion-heart"></i> {props.favoritesCount}
