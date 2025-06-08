@@ -4,8 +4,6 @@ import AuthContext from "../../Context/Context";
 
 export default function AuthenticatedUser(props) {
   const { userInfos } = useContext(AuthContext);
-  console.log(userInfos);
-
   return (
     <nav className="navbar navbar-light">
       <div className="container">
