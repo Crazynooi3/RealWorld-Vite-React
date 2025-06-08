@@ -1,13 +1,15 @@
 import React, { useContext, useEffect, useState } from "react";
 import AuthenticatedUser from "../components/Header/AuthenticatedUser";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Link, useSearchParams } from "react-router-dom";
 import AuthContext from "../Context/Context";
 import ArticlePreview from "../components/ArticlePreview/ArticlePreview";
 import Pagination from "../components/Pagination/Pagination";
+import UnauthenticatedUser from "../components/Header/UnauthenticatedUser";
 
 export default function Profile() {
   const param = useParams();
+  const navigate = useNavigate();
   const [userProfile, setUserProfile] = useState(); // profile: {bio, following, image, username}
   const [currentUser, setCurrentUser] = useState();
   const [userTab, setUserTab] = useState("myArticles");
@@ -20,18 +22,26 @@ export default function Profile() {
   });
   const { isLogedin } = useContext(AuthContext);
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    console.log(userProfile);
+  }, []);
 
   const getProfile = () => {
     const userToken = localStorage.getItem("token");
-    fetch(`http://localhost:3000/api/profiles/${param.username}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${userToken}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => setUserProfile(data));
+    if (isLogedin) {
+      fetch(`http://localhost:3000/api/profiles/${param.username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+        },
+      })
+        .then((res) => res.json())
+        .then((data) => setUserProfile(data));
+    } else {
+      fetch(`http://localhost:3000/api/profiles/${param.username}`)
+        .then((res) => res.json())
+        .then((data) => setUserProfile(data));
+    }
 
     fetch(`http://localhost:3000/api/user`, {
       method: "GET",
@@ -43,6 +53,9 @@ export default function Profile() {
       .then((data) => setCurrentUser(data));
   };
   const follow = () => {
+    if (!isLogedin) {
+      navigate("/login");
+    }
     const userToken = localStorage.getItem("token");
     fetch(`http://localhost:3000/api/profiles/${param.username}/follow`, {
       method: "POST",
@@ -64,7 +77,6 @@ export default function Profile() {
       .then((res) => res.json())
       .then((data) => setUserProfile(data));
   };
-
   const getMyArticle = async () => {
     const userToken = localStorage.getItem("token");
     const { username } = userProfile.profile;
@@ -99,7 +111,6 @@ export default function Profile() {
       return error;
     }
   };
-
   const favorite = (slug) => {
     const userToken = localStorage.getItem("token");
     if (!userToken) {
@@ -117,7 +128,6 @@ export default function Profile() {
         // getYourFeedArticle();
       });
   };
-
   const UnFavorite = (slug) => {
     const userToken = localStorage.getItem("token");
     fetch(`http://localhost:3000/api/articles/${slug}/favorite`, {
@@ -143,7 +153,12 @@ export default function Profile() {
 
   return (
     <>
-      <AuthenticatedUser page="profile" />
+      {isLogedin ? (
+        <AuthenticatedUser page="profile" />
+      ) : (
+        <UnauthenticatedUser />
+      )}
+
       <div className="profile-page">
         <div className="user-info">
           <div className="container">
