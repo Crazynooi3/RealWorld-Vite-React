@@ -100,6 +100,39 @@ export default function Profile() {
     }
   };
 
+  const favorite = (slug) => {
+    const userToken = localStorage.getItem("token");
+    if (!userToken) {
+      navigate("/login");
+    }
+    fetch(`http://localhost:3000/api/articles/${slug}/favorite`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        getMyArticle();
+        // getYourFeedArticle();
+      });
+  };
+
+  const UnFavorite = (slug) => {
+    const userToken = localStorage.getItem("token");
+    fetch(`http://localhost:3000/api/articles/${slug}/favorite`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${userToken}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        getMyArticle();
+        // getYourFeedArticle();
+      });
+  };
+
   useEffect(() => {
     getProfile();
   }, []);
@@ -187,8 +220,8 @@ export default function Profile() {
                   tagList={myArticle.tagList}
                   createdAt={myArticle.createdAt}
                   favorited={myArticle.favorited}
-                  // favoriteFunc={favorite}
-                  // unFavoriteFunc={UnFavorite}
+                  favoriteFunc={favorite}
+                  unFavoriteFunc={UnFavorite}
                 />
               ))}
 
