@@ -67,7 +67,7 @@ export default function Settings() {
       }
       const responseData = await response.json();
       localStorage.setItem("token", responseData.user.token);
-      navigate("/");
+      navigate(`/profile/${userInfos.username}`);
       return responseData;
     } catch (error) {
       console.error("خطا در ویرایش اطلاعات کاربر:", error.message);
