@@ -8,13 +8,14 @@ import { useNavigate } from "react-router-dom";
 import AuthenticatedUser from "../components/Header/AuthenticatedUser";
 
 const schema = YUP.object().shape({
-  URL: YUP.string()
-    .url("لطفاً یک URL معتبر وارد کنید")
-    .required("آدرس تصویر پروفایل الزامی است"),
-  email: YUP.string().email("ایمیل معتبر نیست").required("ایمیل الزامی است"),
+  image: YUP.string().url("URL is not valid").required("URL in required"),
+  username: YUP.string().required("Username is required"),
+  bio: YUP.string().max(200, "Max bio is 200 letter").notRequired(),
+  email: YUP.string().email("Email is not Valid").required("Email is required"),
   password: YUP.string()
-    .min(6, "رمز عبور باید حداقل 6 کاراکتر باشد")
-    .required("رمز عبور الزامی است"),
+    .notRequired()
+    .transform((value) => (value === "" ? undefined : value))
+    .min(6, "Password length must be at least 6 characters"),
 });
 
 export default function Settings() {
@@ -23,28 +24,73 @@ export default function Settings() {
   const {
     register,
     handleSubmit,
-    formState: { errors, usSubmitting },
+    formState: { errors, isSubmitting },
     setValue,
   } = useForm({
     resolver: yupResolver(schema),
     defaultValues: {
-      URL: "",
-      Name: "",
-      Bio: "",
-      Email: "",
+      image: "",
+      username: "",
+      bio: "",
+      email: "",
+      password: "",
     },
   });
+
+  const updateUserInfo = async (data) => {
+    try {
+      const userDatas = {
+        user: Object.fromEntries(
+          Object.entries({
+            email: data.email,
+            username: data.username,
+            ...(data.password && { password: data.password }),
+            ...(data.bio !== undefined && { bio: data.bio }),
+            ...(data.image !== undefined && { image: data.image }),
+          }).filter(([_, value]) => value !== "" && value !== undefined)
+        ),
+      };
+      const userToken = localStorage.getItem("token");
+      const response = await fetch("http://localhost:3000/api/user", {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${userToken}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(userDatas),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "خطا در ویرایش اطلاعات");
+      }
+      const responseData = await response.json();
+      localStorage.setItem("token", responseData.user.token);
+      navigate("/");
+      return responseData;
+    } catch (error) {
+      console.error("خطا در ویرایش اطلاعات کاربر:", error.message);
+      throw error;
+    }
+  };
+
+  const onSubmit = (formdata) => {
+    console.log("Form data:", formdata);
+    updateUserInfo(formdata);
+  };
 
   useEffect(() => {
     if (!isLogedin) {
       navigate("/");
     }
-
-    setValue("URL", userInfos?.image);
-    setValue("Name", userInfos?.username);
-    setValue("Bio", userInfos?.bio);
-    setValue("Email", userInfos?.email);
-  }, []);
+    if (userInfos) {
+      setValue("image", userInfos.image || "");
+      setValue("username", userInfos.username || "");
+      setValue("bio", userInfos.bio || "");
+      setValue("email", userInfos.email || "");
+    }
+  }, [isLogedin, userInfos, navigate, setValue]);
   return (
     <>
       <AuthenticatedUser page="Settings" />
@@ -53,54 +99,72 @@ export default function Settings() {
           <div className="row">
             <div className="col-md-6 offset-md-3 col-xs-12">
               <h1 className="text-xs-center">Your Settings</h1>
-
-              <ul className="error-messages">
-                <li>That name is required</li>
-              </ul>
-
-              <form>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 <fieldset>
                   <fieldset className="form-group">
                     <input
-                      {...register("URL")}
+                      {...register("image")}
                       className="form-control"
                       type="text"
                       placeholder="URL of profile picture"
                     />
+                    <ul className="error-messages">
+                      {errors.image && <li>{errors.image.message}</li>}
+                    </ul>
                   </fieldset>
                   <fieldset className="form-group">
                     <input
-                      {...register("Name")}
+                      {...register("username")}
                       className="form-control form-control-lg"
                       type="text"
-                      placeholder="Your Name"
+                      placeholder="Your Username"
                     />
+                    <ul className="error-messages">
+                      {errors.username && <li>{errors.username.message}</li>}
+                    </ul>
                   </fieldset>
                   <fieldset className="form-group">
                     <textarea
-                      {...register("Bio")}
+                      {...register("bio")}
                       className="form-control form-control-lg"
                       rows="8"
                       placeholder="Short bio about you"
                     ></textarea>
+                    <ul className="error-messages">
+                      {errors.bio && <li>{errors.bio.message}</li>}
+                    </ul>
                   </fieldset>
                   <fieldset className="form-group">
                     <input
-                      {...register("Email")}
+                      {...register("email")}
                       className="form-control form-control-lg"
                       type="text"
                       placeholder="Email"
                     />
+                    <ul className="error-messages">
+                      {errors.email && <li>{errors.email.message}</li>}
+                    </ul>
                   </fieldset>
                   <fieldset className="form-group">
                     <input
-                      {...register("Password")}
+                      {...register("password")}
                       className="form-control form-control-lg"
                       type="password"
                       placeholder="New Password"
                     />
+                    <span className="text-muted">
+                      *** if you dont want to change password, leaves this field
+                      empty
+                    </span>
+                    <ul className="error-messages">
+                      {errors.password && <li>{errors.password.message}</li>}
+                    </ul>
                   </fieldset>
-                  <button className="btn btn-lg btn-primary pull-xs-right">
+                  <button
+                    type="submit"
+                    className="btn btn-lg btn-primary pull-xs-right"
+                    disabled={isSubmitting}
+                  >
                     Update Settings
                   </button>
                 </fieldset>
