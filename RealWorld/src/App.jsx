@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
 import routes from "./Routes";
-import { useRoutes } from "react-router-dom";
+import { useRoutes, useNavigate } from "react-router-dom";
 import AuthContext from "./Context/Context";
 
 function App() {
+  const navigate = useNavigate();
   const router = useRoutes(routes);
   const [isLogin, setIsLogin] = useState();
   const [token, setToken] = useState(null);
@@ -25,6 +26,7 @@ function App() {
     setIsLogin(false);
     setToken(null);
     setUserInfos(null);
+    navigate("/");
   };
 
   const fetchUserData = async () => {

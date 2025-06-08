@@ -47,10 +47,10 @@ export default function AuthenticatedUser(props) {
               className={`nav-link ${
                 props.page === "profile" ? "active" : ""
               } `}
-              to={`/profile/${userInfos.username}`}
+              to={`/profile/${userInfos?.username}`}
             >
-              <img src={userInfos.image} className="user-pic" />
-              {userInfos.username}
+              <img src={userInfos?.image} className="user-pic" />
+              {userInfos?.username}
             </Link>
           </li>
         </ul>
