@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import AuthContext from "../Context/Context";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 
 import UnauthenticatedUser from "../components/Header/UnauthenticatedUser";
 import AuthenticatedUser from "../components/Header/AuthenticatedUser";
@@ -10,8 +10,10 @@ import ArticlePreviewFeed from "../components/ArticlePreview/ArticlePreviewFeed"
 import Pagination from "../components/Pagination/Pagination";
 
 export default function Home() {
+  const navigate = useNavigate();
   const authContext = useContext(AuthContext);
   const [isLogedin, setIsLogin] = useState(authContext.isLogedin);
+  const [tags, setTags] = useState([]);
   const [userInfos, setUserInfos] = useState({
     username: "",
     image: "",
@@ -49,16 +51,12 @@ export default function Home() {
         );
         const data = await request.json();
         setArticleList(data);
-        console.log(data);
-
         return data;
       } else {
         const request = await fetch(
           `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`
         );
         const data = await request.json();
-        console.log(data);
-
         setArticleList(data);
         return data;
       }
@@ -67,8 +65,12 @@ export default function Home() {
       return error;
     }
   };
+
   const getYourFeedArticle = async () => {
     const userToken = localStorage.getItem("token");
+    if (!userToken) {
+      navigate("/login");
+    }
     try {
       const request = await fetch(`http://localhost:3000/api/articles/feed`, {
         method: "GET",
@@ -88,6 +90,9 @@ export default function Home() {
 
   const favorite = (slug) => {
     const userToken = localStorage.getItem("token");
+    if (!userToken) {
+      navigate("/login");
+    }
     fetch(`http://localhost:3000/api/articles/${slug}/favorite`, {
       method: "POST",
       headers: {
@@ -116,9 +121,17 @@ export default function Home() {
       });
   };
 
+  const getTags = () => {
+    fetch(`http://localhost:3000/api/tags`)
+      .then((res) => res.json())
+      .then((data) => {
+        setTags(data.tags);
+      });
+  };
+
   useEffect(() => {
     getGlobalFeed();
-    // console.log(authContext);
+    getTags();
   }, []);
 
   useEffect(() => {
@@ -133,7 +146,6 @@ export default function Home() {
 
   useEffect(() => {
     getAuthContext();
-    console.log(authContext);
   }, [authContext.isLogedin]);
   return (
     <>
@@ -237,30 +249,15 @@ export default function Home() {
                 <p>Popular Tags</p>
 
                 <div className="tag-list">
-                  <a href="" className="tag-pill tag-default">
-                    programming
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    javascript
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    emberjs
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    angularjs
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    react
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    mean
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    node
-                  </a>
-                  <a href="" className="tag-pill tag-default">
-                    rails
-                  </a>
+                  {tags.map((tag, index) => (
+                    <Link
+                      key={index + 1}
+                      to=""
+                      className="tag-pill tag-default"
+                    >
+                      {tag}
+                    </Link>
+                  ))}
                 </div>
               </div>
             </div>
