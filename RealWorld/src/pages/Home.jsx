@@ -10,37 +10,58 @@ import ArticlePreviewFeed from "../components/ArticlePreview/ArticlePreviewFeed"
 import Pagination from "../components/Pagination/Pagination";
 
 export default function Home() {
+  const authContext = useContext(AuthContext);
+  const [isLogedin, setIsLogin] = useState(authContext.isLogedin);
+  const [userInfos, setUserInfos] = useState({
+    username: "",
+    image: "",
+  });
   const [userFeed, setUserFeed] = useState("globalFeed");
   const [searchParams, setSearchParams] = useSearchParams();
   const currentPage = parseInt(searchParams.get("page") || "1", 10);
   const articlesPerPage = 10;
-  const authContext = useContext(AuthContext);
   const [articleList, setArticleList] = useState({
     articles: [],
     articlesCount: 0,
   });
-
   const [feedArticleList, setFeedArticleList] = useState({
     articles: [],
     articlesCount: 0,
   });
 
-  const getArticle = async (offset, limit) => {
+  const getAuthContext = () => {
+    setIsLogin(authContext.isLogedin);
+    setUserInfos(authContext.userInfos);
+  };
+
+  const getGlobalFeed = async (offset, limit) => {
     const userToken = localStorage.getItem("token");
     try {
-      const request = await fetch(
-        `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
+      if (authContext.isLogedin) {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        );
+        const data = await request.json();
+        setArticleList(data);
+        console.log(data);
 
-      const data = await request.json();
-      setArticleList(data);
-      return data;
+        return data;
+      } else {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`
+        );
+        const data = await request.json();
+        console.log(data);
+
+        setArticleList(data);
+        return data;
+      }
     } catch (error) {
       console.log("error on line 18:", error);
       return error;
@@ -65,16 +86,6 @@ export default function Home() {
     }
   };
 
-  useEffect(() => {
-    if (userFeed === "globalFeed") {
-      const offset = (currentPage - 1) * articlesPerPage;
-      getArticle(offset, articlesPerPage);
-    } else if (userFeed === "yourFeed") {
-      const offset = (currentPage - 1) * articlesPerPage;
-      getYourFeedArticle(offset, articlesPerPage);
-    }
-  }, [currentPage, userFeed, authContext.token]);
-
   const favorite = (slug) => {
     const userToken = localStorage.getItem("token");
     fetch(`http://localhost:3000/api/articles/${slug}/favorite`, {
@@ -85,7 +96,7 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        getArticle();
+        getGlobalFeed();
         getYourFeedArticle();
       });
   };
@@ -100,16 +111,36 @@ export default function Home() {
     })
       .then((res) => res.json())
       .then((data) => {
-        getArticle();
+        getGlobalFeed();
         getYourFeedArticle();
       });
   };
+
+  useEffect(() => {
+    getGlobalFeed();
+    // console.log(authContext);
+  }, []);
+
+  useEffect(() => {
+    if (userFeed === "globalFeed") {
+      const offset = (currentPage - 1) * articlesPerPage;
+      getGlobalFeed(offset, articlesPerPage);
+    } else if (userFeed === "yourFeed") {
+      const offset = (currentPage - 1) * articlesPerPage;
+      getYourFeedArticle(offset, articlesPerPage);
+    }
+  }, [currentPage, userFeed]);
+
+  useEffect(() => {
+    getAuthContext();
+    console.log(authContext);
+  }, [authContext.isLogedin]);
   return (
     <>
-      {authContext.isLogedin ? (
+      {isLogedin ? (
         <AuthenticatedUser
-          username={authContext.userInfos.username}
-          image={authContext.userInfos.image}
+          username={userInfos?.username}
+          image={userInfos?.image}
           page="Home"
         />
       ) : (

@@ -7,8 +7,19 @@ function App() {
   const router = useRoutes(routes);
   const [isLogin, setIsLogin] = useState();
   const [token, setToken] = useState(null);
-  const [userInfos, setUserInfos] = useState(null);
-  const login = () => {};
+  const [userInfos, setUserInfos] = useState(null); // user:{bio, email, image, token, username}
+
+  const login = (token, userInfo) => {
+    setToken(token);
+    localStorage.setItem("token", token);
+    setIsLogin(true);
+    setUserInfos({
+      email: userInfo.email,
+      username: userInfo.username,
+      image: userInfo.image,
+      bio: userInfo.bio,
+    });
+  };
   const logout = () => {
     localStorage.removeItem("token");
     setIsLogin(false);
