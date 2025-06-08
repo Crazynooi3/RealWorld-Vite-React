@@ -8,9 +8,9 @@ export default function Profile() {
   const [userProfile, setUserProfile] = useState(); // profile: {bio, following, image, username}
   const [currentUser, setCurrentUser] = useState();
 
-  useEffect(() => {
-    console.log(userProfile);
-  }, [userProfile]);
+  // useEffect(() => {
+  //   console.log(userProfile);
+  // }, [userProfile]);
 
   const getProfile = () => {
     const userToken = localStorage.getItem("token");
@@ -53,6 +53,36 @@ export default function Profile() {
     })
       .then((res) => res.json())
       .then((data) => setUserProfile(data));
+  };
+
+  const getMyArticle = async () => {
+    const userToken = localStorage.getItem("token");
+    try {
+      if (authContext.isLogedin) {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?author=${userProfile.profile.username}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        );
+        const data = await request.json();
+        setArticleList(data);
+        return data;
+      } else {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`
+        );
+        const data = await request.json();
+        setArticleList(data);
+        return data;
+      }
+    } catch (error) {
+      console.log("error on line 18:", error);
+      return error;
+    }
   };
 
   useEffect(() => {

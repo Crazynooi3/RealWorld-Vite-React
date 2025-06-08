@@ -29,6 +29,17 @@ function App() {
     navigate("/");
   };
 
+  const updateUserInfos = (newUserInfo) => {
+    setUserInfos({
+      ...userInfos,
+      email: newUserInfo.email,
+      username: newUserInfo.username,
+      image: newUserInfo.image,
+      bio: newUserInfo.bio,
+      id: userInfos.id,
+    });
+  };
+
   const fetchUserData = async () => {
     const userToken = localStorage.getItem("token");
     if (!userToken) {
@@ -86,6 +97,7 @@ function App() {
         userInfos: userInfos,
         login,
         logout,
+        updateUserInfos,
       }}
     >
       {router}

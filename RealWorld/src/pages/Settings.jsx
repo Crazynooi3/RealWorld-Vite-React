@@ -20,7 +20,8 @@ const schema = YUP.object().shape({
 
 export default function Settings() {
   const navigate = useNavigate();
-  const { userInfos, isLogedin, logout } = useContext(AuthContext);
+  const { userInfos, isLogedin, logout, updateUserInfos } =
+    useContext(AuthContext);
   const {
     register,
     handleSubmit,
@@ -67,7 +68,13 @@ export default function Settings() {
       }
       const responseData = await response.json();
       localStorage.setItem("token", responseData.user.token);
-      navigate(`/profile/${userInfos.username}`);
+      updateUserInfos({
+        email: responseData.user.email,
+        username: responseData.user.username,
+        image: responseData.user.image,
+        bio: responseData.user.bio,
+      });
+
       return responseData;
     } catch (error) {
       console.error("خطا در ویرایش اطلاعات کاربر:", error.message);
@@ -77,6 +84,8 @@ export default function Settings() {
 
   const onSubmit = (formdata) => {
     updateUserInfo(formdata);
+    navigate(`/profile/${formdata.username}`);
+    // updateUserInfos()
   };
 
   useEffect(() => {
