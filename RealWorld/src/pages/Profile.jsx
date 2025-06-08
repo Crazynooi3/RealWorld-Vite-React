@@ -1,16 +1,26 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import AuthenticatedUser from "../components/Header/AuthenticatedUser";
 import { useParams } from "react-router-dom";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
+import AuthContext from "../Context/Context";
+import ArticlePreview from "../components/ArticlePreview/ArticlePreview";
+import Pagination from "../components/Pagination/Pagination";
 
 export default function Profile() {
   const param = useParams();
   const [userProfile, setUserProfile] = useState(); // profile: {bio, following, image, username}
   const [currentUser, setCurrentUser] = useState();
+  const [userTab, setUserTab] = useState("myArticles");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const currentPage = parseInt(searchParams.get("page") || "1", 10);
+  const articlesPerPage = 10;
+  const [myArticleList, setMyArticleList] = useState({
+    articles: [],
+    articlesCount: 0,
+  });
+  const { isLogedin } = useContext(AuthContext);
 
-  // useEffect(() => {
-  //   console.log(userProfile);
-  // }, [userProfile]);
+  useEffect(() => {}, []);
 
   const getProfile = () => {
     const userToken = localStorage.getItem("token");
@@ -57,10 +67,12 @@ export default function Profile() {
 
   const getMyArticle = async () => {
     const userToken = localStorage.getItem("token");
+    const { username } = userProfile.profile;
+
     try {
-      if (authContext.isLogedin) {
+      if (isLogedin && username) {
         const request = await fetch(
-          `http://localhost:3000/api/articles?author=${userProfile.profile.username}`,
+          `http://localhost:3000/api/articles?author=${username}`,
           {
             method: "GET",
             headers: {
@@ -69,18 +81,21 @@ export default function Profile() {
           }
         );
         const data = await request.json();
-        setArticleList(data);
+        setMyArticleList(data);
         return data;
       } else {
         const request = await fetch(
-          `http://localhost:3000/api/articles?offset=${offset}&limit=${limit}`
+          `http://localhost:3000/api/articles?author=${userProfile.profile.username}`,
+          {
+            method: "GET",
+          }
         );
         const data = await request.json();
-        setArticleList(data);
+        setMyArticleList(data);
         return data;
       }
     } catch (error) {
-      console.log("error on line 18:", error);
+      console.log("error:", error);
       return error;
     }
   };
@@ -88,6 +103,10 @@ export default function Profile() {
   useEffect(() => {
     getProfile();
   }, []);
+
+  useEffect(() => {
+    getMyArticle();
+  }, [userProfile]);
 
   return (
     <>
@@ -149,87 +168,38 @@ export default function Profile() {
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <a className="nav-link" href="">
+                    <Link className="nav-link" to="">
                       Favorited Articles
-                    </a>
+                    </Link>
                   </li>
                 </ul>
               </div>
 
-              <div className="article-preview">
-                <div className="article-meta">
-                  <a href="/profile/eric-simons">
-                    <img src="http://i.imgur.com/Qr71crq.jpg" />
-                  </a>
-                  <div className="info">
-                    <a href="/profile/eric-simons" className="author">
-                      Eric Simons
-                    </a>
-                    <span className="date">January 20th</span>
-                  </div>
-                  <button className="btn btn-outline-primary btn-sm pull-xs-right">
-                    <i className="ion-heart"></i> 29
-                  </button>
-                </div>
-                <a
-                  href="/article/how-to-buil-webapps-that-scale"
-                  className="preview-link"
-                >
-                  <h1>How to build webapps that scale</h1>
-                  <p>This is the description for the post.</p>
-                  <span>Read more...</span>
-                  <ul className="tag-list">
-                    <li className="tag-default tag-pill tag-outline">
-                      realworld
-                    </li>
-                    <li className="tag-default tag-pill tag-outline">
-                      implementations
-                    </li>
-                  </ul>
-                </a>
-              </div>
+              {myArticleList.articles.map((myArticle) => (
+                <ArticlePreview
+                  key={myArticle.slug}
+                  author={myArticle.author.username}
+                  image={myArticle.author.image}
+                  title={myArticle.title}
+                  favoritesCount={myArticle.favoritesCount}
+                  description={myArticle.description}
+                  slug={myArticle.slug}
+                  tagList={myArticle.tagList}
+                  createdAt={myArticle.createdAt}
+                  favorited={myArticle.favorited}
+                  // favoriteFunc={favorite}
+                  // unFavoriteFunc={UnFavorite}
+                />
+              ))}
 
-              <div className="article-preview">
-                <div className="article-meta">
-                  <a href="/profile/albert-pai">
-                    <img src="http://i.imgur.com/N4VcUeJ.jpg" />
-                  </a>
-                  <div className="info">
-                    <a href="/profile/albert-pai" className="author">
-                      Albert Pai
-                    </a>
-                    <span className="date">January 20th</span>
-                  </div>
-                  <button className="btn btn-outline-primary btn-sm pull-xs-right">
-                    <i className="ion-heart"></i> 32
-                  </button>
-                </div>
-                <a href="/article/the-song-you" className="preview-link">
-                  <h1>
-                    The song you won't ever stop singing. No matter how hard you
-                    try.
-                  </h1>
-                  <p>This is the description for the post.</p>
-                  <span>Read more...</span>
-                  <ul className="tag-list">
-                    <li className="tag-default tag-pill tag-outline">Music</li>
-                    <li className="tag-default tag-pill tag-outline">Song</li>
-                  </ul>
-                </a>
-              </div>
-
-              <ul className="pagination">
-                <li className="page-item active">
-                  <a className="page-link" href="">
-                    1
-                  </a>
-                </li>
-                <li className="page-item">
-                  <a className="page-link" href="">
-                    2
-                  </a>
-                </li>
-              </ul>
+              {userTab === "myArticles" && myArticleList.articlesCount > 0 && (
+                <Pagination
+                  pages={Math.ceil(
+                    myArticleList.articlesCount / articlesPerPage
+                  )}
+                  currentPage={currentPage}
+                />
+              )}
             </div>
           </div>
         </div>
