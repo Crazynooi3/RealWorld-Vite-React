@@ -1,7 +1,11 @@
-import React from "react";
+import { useContext } from "react";
 import { Link } from "react-router-dom";
+import AuthContext from "../../Context/Context";
 
 export default function AuthenticatedUser(props) {
+  const { userInfos } = useContext(AuthContext);
+  console.log(userInfos);
+
   return (
     <nav className="navbar navbar-light">
       <div className="container">
@@ -41,9 +45,14 @@ export default function AuthenticatedUser(props) {
             </Link>
           </li>
           <li className="nav-item">
-            <Link className="nav-link" to={`/profile/${props.username}`}>
-              <img src={props?.image} className="user-pic" />
-              {props?.username}
+            <Link
+              className={`nav-link ${
+                props.page === "profile" ? "active" : ""
+              } `}
+              to={`/profile/${props.username}`}
+            >
+              <img src={userInfos.image} className="user-pic" />
+              {userInfos.username}
             </Link>
           </li>
         </ul>

@@ -137,15 +137,7 @@ export default function Home() {
   }, [authContext.isLogedin]);
   return (
     <>
-      {isLogedin ? (
-        <AuthenticatedUser
-          username={userInfos?.username}
-          image={userInfos?.image}
-          page="Home"
-        />
-      ) : (
-        <UnauthenticatedUser />
-      )}
+      {isLogedin ? <AuthenticatedUser page="Home" /> : <UnauthenticatedUser />}
       <div className="home-page">
         <div className="banner">
           <div className="container">

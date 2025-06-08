@@ -61,7 +61,7 @@ export default function Profile() {
 
   return (
     <>
-      <AuthenticatedUser />
+      <AuthenticatedUser page="profile" />
       <div className="profile-page">
         <div className="user-info">
           <div className="container">
