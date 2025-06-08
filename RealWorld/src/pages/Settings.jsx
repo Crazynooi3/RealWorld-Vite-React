@@ -76,7 +76,6 @@ export default function Settings() {
   };
 
   const onSubmit = (formdata) => {
-    console.log("Form data:", formdata);
     updateUserInfo(formdata);
   };
 

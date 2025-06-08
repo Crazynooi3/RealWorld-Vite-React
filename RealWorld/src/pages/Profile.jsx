@@ -93,10 +93,13 @@ export default function Profile() {
 
                 {userProfile?.profile?.username ===
                 currentUser?.user?.username ? (
-                  <button className="btn btn-sm btn-outline-secondary action-btn">
+                  <Link
+                    to={`/settings`}
+                    className="btn btn-sm btn-outline-secondary action-btn"
+                  >
                     <i className="ion-gear-a"></i>
                     &nbsp; "Edit Profile Settings"
-                  </button>
+                  </Link>
                 ) : (
                   ""
                 )}
