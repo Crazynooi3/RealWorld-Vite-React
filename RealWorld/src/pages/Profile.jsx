@@ -20,11 +20,13 @@ export default function Profile() {
     articles: [],
     articlesCount: 0,
   });
+  const [favArticleList, setFavArticleList] = useState({
+    articles: [],
+    articlesCount: 0,
+  });
   const { isLogedin } = useContext(AuthContext);
 
-  useEffect(() => {
-    console.log(userProfile);
-  }, []);
+  useEffect(() => {}, []);
 
   const getProfile = () => {
     const userToken = localStorage.getItem("token");
@@ -111,6 +113,40 @@ export default function Profile() {
       return error;
     }
   };
+  const getFavArticle = async () => {
+    const userToken = localStorage.getItem("token");
+    const { username } = userProfile.profile;
+
+    try {
+      if (isLogedin && username) {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?favorited=${username}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        );
+        const data = await request.json();
+        setFavArticleList(data);
+        return data;
+      } else {
+        const request = await fetch(
+          `http://localhost:3000/api/articles?author=${userProfile.profile.username}`,
+          {
+            method: "GET",
+          }
+        );
+        const data = await request.json();
+        setFavArticleList(data);
+        return data;
+      }
+    } catch (error) {
+      console.log("error:", error);
+      return error;
+    }
+  };
   const favorite = (slug) => {
     const userToken = localStorage.getItem("token");
     if (!userToken) {
@@ -149,6 +185,7 @@ export default function Profile() {
 
   useEffect(() => {
     getMyArticle();
+    getFavArticle();
   }, [userProfile]);
 
   return (
@@ -211,34 +248,65 @@ export default function Profile() {
               <div className="articles-toggle">
                 <ul className="nav nav-pills outline-active">
                   <li className="nav-item">
-                    <Link className="nav-link active" to="">
+                    <Link
+                      onClick={() => setUserTab("myArticles")}
+                      className={`nav-link ${
+                        userTab === "myArticles" ? "active" : ""
+                      }`}
+                      to=""
+                    >
                       My Articles
                     </Link>
                   </li>
                   <li className="nav-item">
-                    <Link className="nav-link" to="">
+                    <Link
+                      onClick={() => setUserTab("favArticle")}
+                      className={`nav-link ${
+                        userTab === "favArticle" ? "active" : ""
+                      }`}
+                      to=""
+                    >
                       Favorited Articles
                     </Link>
                   </li>
                 </ul>
               </div>
 
-              {myArticleList.articles.map((myArticle) => (
-                <ArticlePreview
-                  key={myArticle.slug}
-                  author={myArticle.author.username}
-                  image={myArticle.author.image}
-                  title={myArticle.title}
-                  favoritesCount={myArticle.favoritesCount}
-                  description={myArticle.description}
-                  slug={myArticle.slug}
-                  tagList={myArticle.tagList}
-                  createdAt={myArticle.createdAt}
-                  favorited={myArticle.favorited}
-                  favoriteFunc={favorite}
-                  unFavoriteFunc={UnFavorite}
-                />
-              ))}
+              {userTab === "myArticles"
+                ? myArticleList.articles.map((myArticle) => (
+                    <ArticlePreview
+                      key={myArticle.slug}
+                      author={myArticle.author.username}
+                      image={myArticle.author.image}
+                      title={myArticle.title}
+                      favoritesCount={myArticle.favoritesCount}
+                      description={myArticle.description}
+                      slug={myArticle.slug}
+                      tagList={myArticle.tagList}
+                      createdAt={myArticle.createdAt}
+                      favorited={myArticle.favorited}
+                      favoriteFunc={favorite}
+                      unFavoriteFunc={UnFavorite}
+                    />
+                  ))
+                : userTab === "favArticle"
+                ? favArticleList.articles.map((myArticle) => (
+                    <ArticlePreview
+                      key={myArticle.slug}
+                      author={myArticle.author.username}
+                      image={myArticle.author.image}
+                      title={myArticle.title}
+                      favoritesCount={myArticle.favoritesCount}
+                      description={myArticle.description}
+                      slug={myArticle.slug}
+                      tagList={myArticle.tagList}
+                      createdAt={myArticle.createdAt}
+                      favorited={myArticle.favorited}
+                      favoriteFunc={favorite}
+                      unFavoriteFunc={UnFavorite}
+                    />
+                  ))
+                : ""}
 
               {userTab === "myArticles" && myArticleList.articlesCount > 0 && (
                 <Pagination
