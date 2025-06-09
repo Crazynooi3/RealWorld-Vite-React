@@ -61,7 +61,7 @@ export default function Home() {
         return data;
       }
     } catch (error) {
-      console.log("error on line 18:", error);
+      console.log("error:", error);
       return error;
     }
   };
