@@ -1,6 +1,8 @@
+# ![React/Vite/boostrap RealWorld Example App](public/realworld-dual-mode.png)
+
 # پروژه RealWorld - پیاده‌سازی با React و Vite
 
-![بنر پروژه](https://via.placeholder.com/1200x300.png?text=پروژه+RealWorld)  
+![بنر پروژه](public/screenshot.png)  
 _یک اپلیکیشن کامل بر اساس مشخصات RealWorld با استفاده از React، Vite و بک‌اند [Backend Technology]._
 
 ## فهرست مطالب
