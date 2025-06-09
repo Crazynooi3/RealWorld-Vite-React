@@ -133,7 +133,7 @@ export default function Profile() {
         return data;
       } else {
         const request = await fetch(
-          `http://localhost:3000/api/articles?author=${userProfile.profile.username}`,
+          `http://localhost:3000/api/articles?favorited=${username}`,
           {
             method: "GET",
           }
