@@ -1,13 +1,16 @@
 import { useState, useContext, useEffect } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useNavigate } from "react-router-dom";
 
 import AuthenticatedUser from "../components/Header/AuthenticatedUser";
+import UnauthenticatedUser from "../components/Header/UnauthenticatedUser";
 import AuthContext from "../Context/Context";
 import DeleteModal from "../components/Modal/DeleteModal";
 
 export default function Article() {
+  const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const authContext = useContext(AuthContext);
+  const { isLogedin } = useContext(AuthContext);
   const { articleSlug } = useParams();
   const [articleDetail, setArticleDetail] = useState({});
   const [isAuthor, setIsAuthor] = useState(false);
@@ -22,30 +25,40 @@ export default function Article() {
   const getArticle = async () => {
     const userToken = localStorage.getItem("token");
     try {
-      const request = await fetch(
-        `http://localhost:3000/api/articles/${articleSlug}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${userToken}`,
-          },
-        }
-      );
+      if (isLogedin) {
+        const request = await fetch(
+          `http://localhost:3000/api/articles/${articleSlug}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${userToken}`,
+            },
+          }
+        );
 
-      const data = await request.json();
-      setArticleDetail(data);
-      setFavorited(data.article.favorited);
-      setFavoritesCount(data.article.favoritesCount);
-      setIsFalowing(data.article.author.following);
-      // console.log(data);
+        const data = await request.json();
+        setArticleDetail(data);
+        setFavorited(data.article.favorited);
+        setFavoritesCount(data.article.favoritesCount);
+        setIsFalowing(data.article.author.following);
+        return data;
+      } else {
+        const request = await fetch(
+          `http://localhost:3000/api/articles/${articleSlug}`
+        );
 
-      return data;
+        const data = await request.json();
+        setArticleDetail(data);
+        setFavorited(data.article.favorited);
+        setFavoritesCount(data.article.favoritesCount);
+        setIsFalowing(data.article.author.following);
+        return data;
+      }
     } catch (error) {
       console.log("error on line 18:", error);
       return error;
     }
   };
-
   const isAuthorFunc = () => {
     let articleAuthor = articleDetail?.article?.author?.username;
     let currentUser = authContext?.userInfos?.username;
@@ -56,7 +69,6 @@ export default function Article() {
       setIsAuthor(false);
     }
   };
-
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = {
@@ -66,7 +78,6 @@ export default function Article() {
     };
     return date.toLocaleDateString("en-US", options); // خروجی: 28 May 2025
   };
-
   const deleteArticle = async () => {
     const userToken = localStorage.getItem("token");
     try {
@@ -90,7 +101,6 @@ export default function Article() {
       return error;
     }
   };
-
   const getComments = async () => {
     try {
       const request = await fetch(
@@ -105,8 +115,10 @@ export default function Article() {
       return error;
     }
   };
-
   const favorite = () => {
+    if (!isLogedin) {
+      navigate("/login");
+    }
     const userToken = localStorage.getItem("token");
     fetch(`http://localhost:3000/api/articles/${articleSlug}/favorite`, {
       method: "POST",
@@ -120,7 +132,6 @@ export default function Article() {
         getArticle();
       });
   };
-
   const UnFavorite = () => {
     const userToken = localStorage.getItem("token");
     fetch(`http://localhost:3000/api/articles/${articleSlug}/favorite`, {
@@ -135,7 +146,6 @@ export default function Article() {
         getArticle();
       });
   };
-
   const favBtnHandler = () => {
     if (favorited) {
       UnFavorite();
@@ -173,7 +183,6 @@ export default function Article() {
       return error;
     }
   };
-
   const removeComment = async (e, commentID) => {
     e.preventDefault();
     const userToken = localStorage.getItem("token");
@@ -196,8 +205,10 @@ export default function Article() {
       return error;
     }
   };
-
   const follow = () => {
+    if (!isLogedin) {
+      navigate("/login");
+    }
     const userToken = localStorage.getItem("token");
     fetch(
       `http://localhost:3000/api/profiles/${articleDetail.article.author.username}/follow`,
@@ -214,7 +225,6 @@ export default function Article() {
         getArticle();
       });
   };
-
   const unFollow = () => {
     const userToken = localStorage.getItem("token");
     fetch(
@@ -232,7 +242,6 @@ export default function Article() {
         getArticle();
       });
   };
-
   const followBtnHandler = () => {
     if (isFalowing) {
       unFollow();
@@ -257,24 +266,28 @@ export default function Article() {
         Comments section at bottom of page
         Delete comment button (only shown to comment’s author)
         */}
-      <AuthenticatedUser
-        page={""}
-        username={authContext?.userInfos?.username}
-        image={authContext?.userInfos?.image}
-      />
+      {isLogedin ? (
+        <AuthenticatedUser page={"NewArticle"} />
+      ) : (
+        <UnauthenticatedUser />
+      )}
+
       <div className="article-page">
         <div className="banner">
           <div className="container">
             <h1>{articleDetail?.article?.title}</h1>
 
             <div className="article-meta">
-              <a href="/profile/eric-simons">
+              <Link to={`/profile/${articleDetail?.article?.author?.username}`}>
                 <img src={articleDetail?.article?.author?.image} />
-              </a>
+              </Link>
               <div className="info">
-                <a href="/profile/eric-simons" className="author">
+                <Link
+                  to={`/profile/${articleDetail?.article?.author?.username}`}
+                  className="author"
+                >
                   {articleDetail?.article?.author?.username}
-                </a>
+                </Link>
                 <span className="date">
                   {formatDate(articleDetail?.article?.createdAt)}
                 </span>
@@ -344,13 +357,16 @@ export default function Article() {
 
           <div className="article-actions">
             <div className="article-meta">
-              <a href="profile.html">
+              <Link to={`/profile/${articleDetail?.article?.author?.username}`}>
                 <img src={articleDetail?.article?.author?.image} />
-              </a>
+              </Link>
               <div className="info">
-                <a href="" className="author">
+                <Link
+                  to={`/profile/${articleDetail?.article?.author?.username}`}
+                  className="author"
+                >
                   {articleDetail?.article?.author?.username}
-                </a>
+                </Link>
                 <span className="date">
                   {formatDate(articleDetail?.article?.createdAt)}
                 </span>
@@ -411,11 +427,16 @@ export default function Article() {
                   ></textarea>
                 </div>
                 <div className="card-footer">
-                  <img
-                    src={authContext?.userInfos?.image}
-                    className="comment-author-img"
-                  />
+                  {isLogedin ? (
+                    <img
+                      src={authContext?.userInfos?.image}
+                      className="comment-author-img"
+                    />
+                  ) : (
+                    ""
+                  )}
                   <button
+                    disabled={!isLogedin}
                     onClick={(e) => createComment(e, commentValue)}
                     className="btn btn-sm btn-primary"
                   >
