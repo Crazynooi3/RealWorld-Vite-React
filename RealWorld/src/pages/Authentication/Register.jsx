@@ -1,8 +1,7 @@
-import React from "react";
 import * as YUP from "yup";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import AuthContext from "../../Context/Context";
 import { useNavigate } from "react-router-dom";
 
@@ -18,14 +17,18 @@ const schema = YUP.object().shape({
 
 export default function Register() {
   const authContext = useContext(AuthContext);
+  const { isLogedin, login } = useContext(AuthContext);
   const navigate = useNavigate();
-  if (authContext.isLogedin) {
-    navigate("/");
-  }
+  useEffect(() => {
+    if (isLogedin) {
+      navigate("/", { replace: true });
+    }
+  }, [isLogedin]);
+
   const {
     register,
     handleSubmit,
-    formState: { errors, usSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
   });
@@ -54,8 +57,9 @@ export default function Register() {
         throw new Error(errorData.message || "خطا در ورود به سیستم");
       }
       const responseData = await response.json();
-      localStorage.setItem("token", responseData.user.token);
-      navigate("/");
+      const { token } = responseData.user;
+
+      login(token, responseData.user);
       return responseData;
     } catch (error) {
       console.error("خطا در ورود:", error.message);
