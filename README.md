@@ -66,11 +66,10 @@ _یک اپلیکیشن کامل بر اساس داکیومنت RealWorld با ا
 
 1. **کلون کردن مخزن:**
 
-   ````bash
+   ```bash
    git clone https://github.com/Crazynooi3/RealWorld-React.git
-   cd RealWorld-React   ```
-
-   ````
+   cd RealWorld-React
+   ```
 
 2. **نصب وابستگی‌های فرانت‌اند:**
 
@@ -81,8 +80,8 @@ _یک اپلیکیشن کامل بر اساس داکیومنت RealWorld با ا
 
 3. **نصب وابستگی‌های بک‌اند:**
    ```bash
-   cd backend
-   [مثلاً npm install یا pip install -r requirements.txt]
+   cd Realworld-React/backend
+   npm install
    ```
 
 ### اجرای پروژه
@@ -90,8 +89,8 @@ _یک اپلیکیشن کامل بر اساس داکیومنت RealWorld با ا
 1. **راه‌اندازی سرور بک‌اند:**
 
    ```bash
-   cd backend
-   [مثلاً npm start یا python manage.py runserver]
+   cd Realworld-React/backend
+   NPM Start
    ```
 
    سرور بک‌اند روی `http://localhost:[پورت بک‌اند, مثلاً 3000 یا 8000]` اجرا می‌شود.
