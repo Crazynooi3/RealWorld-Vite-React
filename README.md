@@ -86,14 +86,19 @@ _یک اپلیکیشن کامل بر اساس داکیومنت RealWorld با ا
 
 ### اجرای پروژه
 
+> #### بک اند این پروژه به دیتابیس Postger متصل است و پورت پیش فرض نیز 3000 می باشد. دقت داشته باشید که در پوشه Backend نیاز به اضافه کردن فایل `.env` می باشد.
+
+```bash
+DATABASE_URL=postgresql://postgres:[yourpassword]@localhost:5432/realworld
+PORT=3000
+```
+
 1. **راه‌اندازی سرور بک‌اند:**
 
    ```bash
    cd Realworld-React/backend
    NPM Start
    ```
-
-> ### بک اند این پروژه به دیتابیس Postger متصل است و پورت پیش فرض نیز 3000 می باشد.
 
 2. **راه‌اندازی سرور توسعه فرانت‌اند:**
 
@@ -164,13 +169,12 @@ npm run dev
 
 برای سؤالات یا بازخورد با من تماس بگیرید:
 
-- GitHub: [نام کاربری GitHub شما](https://github.com/[نام کاربری GitHub شما])
-- ایمیل: [ایمیل شما]
-- لینکدین: [پروفایل لینکدین شما]
+- GitHub: [Crazynooi3](https://github.com/Crazynooi3)
+- لینکدین: [Ehsan-ghannad](https://tr.linkedin.com/in/ehsan-ghannad?trk=people-guest_people_search-card)
 
 ## نسخه انگلیسی
 
 این مستند به‌زودی به انگلیسی در فایل [README_en.md](README_en.md) در دسترس خواهد بود.  
 _برای تغییر زبان به انگلیسی، به فایل README_en.md مراجعه کنید (پس از آماده‌سازی)._
 
-_ساخته‌شده با 💻 و ☕ توسط [نام شما]._
+_ساخته‌شده با 💻 و ☕ توسط [احسان قناد]._
